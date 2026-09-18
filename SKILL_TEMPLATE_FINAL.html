@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub 项目配置指南</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-cream: #F5EFE7;
+  --primary-blue: #4169E1;
+  --secondary-brown: #A67C52;
+  --accent-black: #1A1A1A;
+  --text-dark: #1A1A1A;
+  --text-white: #FFFFFF;
+  --yellow-alert: #FFF8E1;
+  --highlight-yellow: #FFD700;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg-cream);
+  color: var(--text-dark);
+  line-height: 1.6;
+  display: flex;
+}
+
+/* 左侧导航栏 - 只显示横线 */
+.sidebar {
+  width: 60px;
+  background: var(--bg-cream);
+  padding: 40px 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid #E0D5C7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.nav-line {
+  width: 30px;
+  height: 3px;
+  background: var(--secondary-brown);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-line:hover {
+  background: var(--primary-blue);
+  width: 40px;
+}
+
+.nav-line.active {
+  background: var(--primary-blue);
+  width: 40px;
+  box-shadow: 0 0 8px rgba(65, 105, 225, 0.4);
+}
+
+/* 悬停显示标题 */
+.nav-line::after {
+  content: attr(data-title);
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent-black);
+  color: var(--text-white);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-line:hover::after,
+.nav-line.active::after {
+  opacity: 1;
+}
+
+/* 主内容区 */
+.content {
+  margin-left: 60px;
+  flex: 1;
+  padding: 0;
+}
+
+.page {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  padding: 30mm;
+  background: var(--bg-cream);
+  page-break-after: always;
+  scroll-margin-top: 0;
+}
+
+/* 一级标题 - 大字体，高度跟字体一致 */
+.page-title {
+  font-size: 88px;
+  font-weight: 700;
+  color: var(--text-dark);
+  background: var(--primary-blue);
+  padding: 0.2px 30px;
+  margin: -30mm -30mm 30px -30mm;
+  text-align: center;
+  border-bottom: 6px solid var(--text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  line-height: 1.1;
+}
+
+/* 二级标题 */
+h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dark);
+  background: var(--secondary-brown);
+  padding: 15px 20px;
+  margin: 30px 0 20px 0;
+  border-radius: 4px;
+}
+
+/* 三级标题 */
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 20px 0 12px 0;
+  border-left: 5px solid var(--primary-blue);
+  padding-left: 15px;
+}
+
+/* 前景提要 */
+.foreground {
+  background: var(--yellow-alert);
+  border-left: 3px solid var(--secondary-brown);
+  padding: 18px;
+  margin: 18px 0;
+  border-radius: 4px;
+  color: var(--text-dark);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.foreground strong {
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+/* 步骤 */
+.step {
+  margin: 18px 0;
+  padding: 0;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.step-number {
+  background: var(--primary-blue);
+  color: var(--text-dark);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--secondary-brown);
+}
+
+.step-content {
+  font-size: 13px;
+  color: var(--text-dark);
+  line-height: 1.9;
+  margin-left: 55px;
+  margin-top: -40px;
+}
+
+.step-content ol,
+.step-content ul {
+  margin-left: 25px;
+  margin-top: 12px;
+}
+
+.step-content li {
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+/* 代码块 */
+.code-box {
+  background: var(--accent-black);
+  color: #00FF00;
+  padding: 15px 18px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  margin: 12px 0;
+  overflow-x: auto;
+  word-break: break-all;
+  border: 1px solid #333;
+}
+
+/* 突出框 */
+.highlight-box {
+  background: var(--accent-black);
+  color: var(--text-white);
+  padding: 16px 20px;
+  margin: 15px 0;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.8;
+  border-left: 5px solid var(--primary-blue);
+}
+
+.highlight-box strong {
+  color: var(--highlight-yellow);
+  font-weight: 700;
+}
+
+/* 流程图 */
+.flowchart {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.flow-box {
+  background: var(--primary-blue);
+  color: var(--text-dark);
+  padding: 15px;
+  border-radius: 50%;
+  font-weight: 700;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.flow-box.success {
+  background: #4CAF50;
+  color: var(--text-white);
+}
+
+.flow-arrow {
+  color: var(--secondary-brown);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* 表格 */
+.framework-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 18px 0;
+  background: var(--bg-cream);
+  border: 2px solid var(--secondary-brown);
+}
+
+.framework-table th {
+  background: var(--primary-blue);
+  color: var(--text-dark);
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 700;
+}
+
+.framework-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #DDD;
+  color: var(--text-dark);
+}
+
+.framework-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.tag-parallel {
+  background: #C8E6C9;
+  color: var(--text-dark);
+}
+
+.tag-sequential {
+  background: #FFF9C4;
+  color: var(--text-dark);
+}
+
+/* 高亮框 */
+.highlight {
+  background: var(--highlight-yellow);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+p {
+  color: var(--text-dark);
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 12px 0;
+}
+
+strong {
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid #E0D5C7;
+    padding: 15px;
+    flex-direction: row;
+    gap: 15px;
+    overflow-y: visible;
+    overflow-x: auto;
+  }
+
+  .content {
+    margin-left: 0;
+  }
+
+  .page {
+    padding: 20mm;
+  }
+
+  .page-title {
+    font-size: 32px;
+    margin: -20mm -20mm 20px -20mm;
+    padding: 0.2px 15px;
+  }
+
+  .flowchart {
+    flex-direction: column;
+  }
+
+  .flow-arrow {
+    transform: rotate(90deg);
+  }
+
+  .flow-box {
+    width: 70px;
+    height: 70px;
+    font-size: 11px;
+  }
+
+  .nav-line::after {
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- 左侧导航栏 - 只有横线 -->
+<div class="sidebar">
+  <div class="nav-line" data-title="项目概览"></div>
+  <div class="nav-line" data-title="Step 1"></div>
+  <div class="nav-line" data-title="Step 2"></div>
+  <div class="nav-line" data-title="Step 3"></div>
+  <div class="nav-line" data-title="Step 4"></div>
+  <div class="nav-line" data-title="Step 5"></div>
+  <div class="nav-line" data-title="常见问题"></div>
+</div>
+
+<!-- 主内容区 -->
+<div class="content">
+
+<!-- ============ 第1页：项目概览 ============ -->
+<div class="page" id="page-overview">
+  <div class="page-title">AnyRouter 多账号自动签到</div>
+
+  <p style="font-size: 14px; color: var(--secondary-brown); margin-bottom: 20px; font-weight: 600;">完全零基础用户的超详细教程 | 一键配置自动签到</p>
+
+  <h2>这个项目是什么？</h2>
+
+  <p style="font-size: 14px; line-height: 2;">
+    一个<strong>自动化签到工具</strong>。用它可以自动为你的多个账号每天签到，获取积分，完全无需手动操作。支持 AnyRouter、Agent Router 等多个平台。使用 GitHub Actions 自动运行，配置一次后就能自动工作。
+  </p>
+
+  <h2>整体工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">Fork<br>仓库</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">获取<br>信息</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">配置<br>Secret</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">启用<br>Actions</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">成功</div>
+  </div>
+
+  <h2>依赖关系（哪些可并行？）</h2>
+
+  <table class="framework-table">
+    <thead>
+      <tr>
+        <th>步骤</th>
+        <th>可以并行吗？</th>
+        <th>需要多久</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>步骤1：Fork 仓库</strong></td>
+        <td><span class="tag tag-parallel">同步进行</span></td>
+        <td>1-2 分钟</td>
+      </tr>
+      <tr>
+        <td><strong>步骤2：获取账号信息</strong></td>
+        <td><span class="tag tag-parallel">与步骤1并行</span></td>
+        <td>5-10 分钟</td>
+      </tr>
+      <tr>
+        <td><strong>步骤3：配置 Secret</strong></td>
+        <td><span class="tag tag-sequential">最后进行</span></td>
+        <td>3-5 分钟</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>当前环境检查</h2>
+
+  <p><strong>你需要的：</strong></p>
+  <div style="margin-left: 20px;">
+    <p><span class="highlight">GitHub 账户</span> - 需要手动准备（如果没有，去 github.com 免费注册）</p>
+    <p><span class="highlight">浏览器开发者工具</span> - 用来获取 Cookies（F12 键打开）</p>
+    <p><span class="highlight">目标网站账户</span> - AnyRouter 或其他平台的账户</p>
+  </div>
+</div>
+
+<!-- ============ 第2页：步骤1 Fork 仓库 ============ -->
+<div class="page" id="step1">
+  <div class="page-title">步骤1：Fork 仓库</div>
+
+  <h2>这一步做什么？</h2>
+  <p>将官方仓库复制到你的 GitHub 账户，这样你就能配置属于你的自动签到脚本。</p>
+
+  <h2>工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">打开<br>项目页面</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">点击<br>Fork</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">确认<br>创建</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">完成</div>
+  </div>
+
+  <h2>详细操作步骤</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">打开项目页面</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>打开浏览器</li>
+        <li>访问：<span class="highlight">https://github.com/loks666/anyrouter-autolog</span></li>
+        <li>页面加载完成</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">点击 Fork 按钮</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>在页面右上角找到 <span class="highlight">Fork 按钮</span></li>
+        <li>点击 Fork</li>
+        <li>会跳出一个对话框</li>
+      </ol>
+      <div class="highlight-box" style="margin-top: 12px;">
+        <strong>Fork 按钮位置：</strong>页面右上角，在 "Watch" 按钮旁边
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">确认 Fork 创建</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>在弹出的对话框中，直接点 <span class="highlight">Create fork 按钮</span></li>
+        <li>等待 GitHub 处理（通常 1-2 秒）</li>
+        <li>页面会跳转到你的 Fork 页面</li>
+      </ol>
+      <div class="highlight-box" style="margin-top: 12px;">
+        <strong>成功标志：</strong>页面标题变成 <code style="color: var(--highlight-yellow);">你的用户名/anyrouter-autolog</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background: #4CAF50; margin-top: 25px;">
+    <strong>步骤1完成！</strong>仓库已 Fork 到你的账户。现在可以进行步骤2。
+  </div>
+</div>
+
+<!-- ============ 第3页：步骤2 获取账号信息 ============ -->
+<div class="page" id="step2">
+  <div class="page-title">步骤2：获取账号信息</div>
+
+  <h2>这一步做什么？</h2>
+  <p>从浏览器中获取你的 Cookies 和 API User，这是自动签到的凭证。</p>
+
+  <h2>工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">登录<br>网站</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">打开<br>F12</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">获取<br>Cookies</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">完成</div>
+  </div>
+
+  <div class="foreground">
+    <strong>重要提示：</strong>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+      <li><strong>Cookies 每个月失效一次</strong>，失效后会报 401 错误，需要重新获取</li>
+      <li><strong>需要手动获取</strong> - 这是必须的手动操作步骤</li>
+    </ul>
+  </div>
+
+  <h2>详细操作步骤</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">登录目标网站</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>打开浏览器访问：<span class="highlight">https://anyrouter.top/</span></li>
+        <li>用你的账号密码登录</li>
+      </ol>
+      <div class="highlight-box" style="margin-top: 12px;">
+        <strong>成功标志：</strong>页面显示你已登录
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">获取 Cookies（手动操作）</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>按 <span class="highlight">F12 键</span>打开开发者工具</li>
+        <li>点击 <span class="highlight">"Application" 或 "存储" 选项卡</span></li>
+        <li>在左侧找到 <span class="highlight">"Cookies"</span></li>
+        <li>找到网站域名，展开并复制 <span class="highlight">session 值</span></li>
+      </ol>
+      <div class="highlight-box" style="margin-top: 12px;">
+        <strong>你需要：</strong>复制 session 的值（一个很长的字符串）
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background: #4CAF50; margin-top: 25px;">
+    <strong>步骤2完成！</strong>你现在有了 Cookies。继续步骤3。
+  </div>
+</div>
+
+<!-- ============ 第4页：步骤3 配置 Secret ============ -->
+<div class="page" id="step3">
+  <div class="page-title">步骤3：配置 GitHub Secret</div>
+
+  <h2>这一步做什么？</h2>
+  <p>把你的账号信息安全地存储到 GitHub，这样自动签到脚本才能使用你的账号。</p>
+
+  <h2>工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">进入<br>Settings</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">创建<br>环境</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">添加<br>Secret</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">完成</div>
+  </div>
+
+  <h2>详细操作步骤</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">进入 Settings 页面</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>打开你 Fork 后的仓库</li>
+        <li>点击上面的 <span class="highlight">Settings 选项卡</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">创建 Environment</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>在左侧菜单找到 <span class="highlight">Environments</span></li>
+        <li>点击 <span class="highlight">New environment</span></li>
+        <li>输入名称：<span class="highlight">production</span></li>
+        <li>点击 <span class="highlight">Configure environment</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">添加 Secret</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>找到 <span class="highlight">Environment secrets</span></li>
+        <li>点击 <span class="highlight">Add environment secret</span></li>
+        <li>Name：<span class="highlight">ANYROUTER_ACCOUNTS</span></li>
+        <li>Value：粘贴你的账号配置（JSON格式）</li>
+        <li>点击 <span class="highlight">Add secret</span></li>
+      </ol>
+      <div class="code-box">[
+  {
+    "name": "我的账号",
+    "cookies": {
+      "session": "你的session值"
+    }
+  }
+]</div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background: #4CAF50; margin-top: 25px;">
+    <strong>步骤3完成！</strong>账号信息已保存。
+  </div>
+</div>
+
+<!-- ============ 第5页：步骤4 启用 Actions ============ -->
+<div class="page" id="step4">
+  <div class="page-title">步骤4：启用 GitHub Actions</div>
+
+  <h2>这一步做什么？</h2>
+  <p>启用自动化脚本，让 GitHub 自动为你的账号签到。</p>
+
+  <h2>工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">进入<br>Actions</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">启用<br>Actions</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">启用<br>Workflow</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">完成</div>
+  </div>
+
+  <h2>详细操作步骤</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">进入 Actions 选项卡</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>在仓库页面，点击 <span class="highlight">Actions</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">启用 Actions</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>如果看到 <span class="highlight">"Actions is disabled"</span></li>
+        <li>点击 <span class="highlight">Enable GitHub Actions</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">启用 Workflow</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>找到 <span class="highlight">AnyRouter 自动签到 workflow</span></li>
+        <li>如果被禁用，点击 <span class="highlight">Enable workflow</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background: #4CAF50; margin-top: 25px;">
+    <strong>步骤4完成！</strong>Workflow 已启用。
+  </div>
+</div>
+
+<!-- ============ 第6页：步骤5 测试运行 ============ -->
+<div class="page" id="step5">
+  <div class="page-title">步骤5：测试运行</div>
+
+  <h2>这一步做什么？</h2>
+  <p>手动运行一次脚本，确保配置正确。</p>
+
+  <h2>工作流程</h2>
+
+  <div class="flowchart">
+    <div class="flow-box">打开<br>Workflow</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">点击<br>Run</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">查看<br>日志</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box success">成功</div>
+  </div>
+
+  <h2>详细操作步骤</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">打开 Workflow</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>在 Actions 页面找到 <span class="highlight">AnyRouter 自动签到</span></li>
+        <li>点击打开</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">手动运行</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>点击 <span class="highlight">Run workflow</span></li>
+        <li>等待执行完成</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">查看结果</div>
+    </div>
+    <div class="step-content">
+      <ol>
+        <li>点击最新的运行记录</li>
+        <li>查看日志，找 <span class="highlight">Success</span> 字样</li>
+        <li>如果看到错误 401，需要重新获取 Cookies</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background: #4CAF50; margin-top: 25px;">
+    <strong>完成！</strong>你的自动签到已成功配置。
+  </div>
+</div>
+
+<!-- ============ 最后一页：常见问题 ============ -->
+<div class="page" id="faq">
+  <div class="page-title">常见问题排查</div>
+
+  <h2>问题1：看到 Error 401</h2>
+
+  <p><strong>原因：</strong>Cookies 过期了</p>
+
+  <p><strong>解决方案：</strong>重新获取 Cookies 并更新 Secret</p>
+
+  <h2>问题2：不确定是否成功</h2>
+
+  <p><strong>解决方案：</strong>手动运行 workflow 查看日志</p>
+
+  <div class="foreground">
+    <strong>需要更多帮助？</strong>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+      <li>查看项目 GitHub Issues</li>
+      <li>查看项目完整 README</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+const navLines = document.querySelectorAll('.nav-line');
+const pages = document.querySelectorAll('.page');
+
+// 设置每条线对应的页面
+const pageIds = ['page-overview', 'step1', 'step2', 'step3', 'step4', 'step5', 'faq'];
+
+// 点击导航线
+navLines.forEach((line, index) => {
+  line.addEventListener('click', () => {
+    const pageId = pageIds[index];
+    const page = document.getElementById(pageId);
+    if (page) {
+      page.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+
+// 监听滚动，更新活跃状态
+window.addEventListener('scroll', () => {
+  let current = 0;
+
+  pages.forEach((page, index) => {
+    const rect = page.getBoundingClientRect();
+    if (rect.top <= window.innerHeight / 2) {
+      current = index;
+    }
+  });
+
+  navLines.forEach((line, index) => {
+    if (index === current) {
+      line.classList.add('active');
+    } else {
+      line.classList.remove('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
